@@ -1,7 +1,7 @@
-main: #ksodfkl;ksal;dfkd
+main: #sdkfjkljsdaklf
     addi x4, zero, 50
     addi x5, zero, 50
-    beq x4, # jasdkljflkjasldkfj x5, label1 #asjdfjklajsdkf
+    beq x4, x5, label1 #asjdfjklajsdkf
     addi x6, zero, 80
     beq zero, zero, label2         #djaskjfsaj oefidsjf
     #askldfja
