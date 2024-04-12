@@ -21,7 +21,7 @@ const instructions = linesWithoutComments.filter((line) => {
 const labelsWithInstructionIndex = linesWithoutComments.map((line, i) => {
   if ((/^.+:$/).test(line)) {
     console.log(line)
-    if (!/^[\w._][\w_\d]*:$/.test(line)) {
+    if (!/^[\w._][\w_\d()]*:$/.test(line)) {
       throw new Error(`Invalid label ${line} at line ${i + 1}`)
     }
     const labelIndex = instructions.includes(linesWithoutComments[i + 1]) ? instructions.indexOf(linesWithoutComments[i + 1]) : null
@@ -97,7 +97,7 @@ instructions.forEach((instruction, i) => {
       try {
         const rdBinary = registerToBinary(rd)
         const symbolBinary = parseInt(symbol) < 0 ? complement2(parseInt(Math.abs(symbol)).toString(2).padStart(32, '0')) : parseInt(symbol).toString(2).padStart(32, '0')
-        const funct3 = FUNCT3[type].auipc
+        const funct3 = FUNCT3.TYPE_I.addi
         const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
         const imm1Binary = symbolBinary.slice(0, 12)
         const imm2Binary = symbolBinary.slice(12, 32)
@@ -314,6 +314,394 @@ instructions.forEach((instruction, i) => {
       } catch (e) {
         throw new Error(e.message + ` at instruction ${i + 1}`)
       }
+    } else if (name === 'beqz') {
+      if (args.length !== 2) {
+        throw new Error(`Instruction ${name} requires 2 arguments at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[1])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      } else if (!/^[^,]+,$/.test(args[0])) {
+        throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
+      }
+      const [rs, label] = args.map((arg) => arg.replace(/,/, ''))
+
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!/^-[1-9]|-409[0-6]|-?[1-9][0-9]{1,2}|-?[1-3][0-9]{3}|-?40[0-8][0-9]|[0-9]|409[0-5]$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+      }
+      try {
+        const rs1Binary = registerToBinary(rs)
+        const rs2Binary = registerToBinary('zero')
+        const funct3 = FUNCT3.TYPE_B.beq
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(13, '0')) : parseInt(imm).toString(2).padStart(13, '0')
+        const opcode = OPCODES.beq
+        binOutput += `${immBinary[0]}${immBinary.slice(2, 8)}${rs2Binary}${rs1Binary}${funct3Binary}${immBinary.slice(8, 12)}${immBinary[1]}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'bnez') {
+      if (args.length !== 2) {
+        throw new Error(`Instruction ${name} requires 2 arguments at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[1])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      } else if (!/^[^,]+,$/.test(args[0])) {
+        throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
+      }
+      const [rs, label] = args.map((arg) => arg.replace(/,/, ''))
+
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!/^-[1-9]|-409[0-6]|-?[1-9][0-9]{1,2}|-?[1-3][0-9]{3}|-?40[0-8][0-9]|[0-9]|409[0-5]$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+      }
+      try {
+        const rs1Binary = registerToBinary(rs)
+        const rs2Binary = registerToBinary('zero')
+        const funct3 = FUNCT3.TYPE_B.bne
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(13, '0')) : parseInt(imm).toString(2).padStart(13, '0')
+        const opcode = OPCODES.bne
+        binOutput += `${immBinary[0]}${immBinary.slice(2, 8)}${rs2Binary}${rs1Binary}${funct3Binary}${immBinary.slice(8, 12)}${immBinary[1]}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'blez') {
+      if (args.length !== 2) {
+        throw new Error(`Instruction ${name} requires 2 arguments at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[1])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      } else if (!/^[^,]+,$/.test(args[0])) {
+        throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
+      }
+      const [rs, label] = args.map((arg) => arg.replace(/,/, ''))
+
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!/^-[1-9]|-409[0-6]|-?[1-9][0-9]{1,2}|-?[1-3][0-9]{3}|-?40[0-8][0-9]|[0-9]|409[0-5]$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+      }
+      try {
+        const rs1Binary = registerToBinary('zero')
+        const rs2Binary = registerToBinary(rs)
+        const funct3 = FUNCT3.TYPE_B.blz
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(13, '0')) : parseInt(imm).toString(2).padStart(13, '0')
+        const opcode = OPCODES.blz
+        binOutput += `${immBinary[0]}${immBinary.slice(2, 8)}${rs2Binary}${rs1Binary}${funct3Binary}${immBinary.slice(8, 12)}${immBinary[1]}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'bgez') {
+      if (args.length !== 2) {
+        throw new Error(`Instruction ${name} requires 2 arguments at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[1])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      } else if (!/^[^,]+,$/.test(args[0])) {
+        throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
+      }
+      const [rs, label] = args.map((arg) => arg.replace(/,/, ''))
+
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!/^-[1-9]|-409[0-6]|-?[1-9][0-9]{1,2}|-?[1-3][0-9]{3}|-?40[0-8][0-9]|[0-9]|409[0-5]$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+      }
+      try {
+        const rs1Binary = registerToBinary(rs)
+        const rs2Binary = registerToBinary('zero')
+        const funct3 = FUNCT3.TYPE_B.bge
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(13, '0')) : parseInt(imm).toString(2).padStart(13, '0')
+        const opcode = OPCODES.bge
+        binOutput += `${immBinary[0]}${immBinary.slice(2, 8)}${rs2Binary}${rs1Binary}${funct3Binary}${immBinary.slice(8, 12)}${immBinary[1]}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'bltz') {
+      if (args.length !== 2) {
+        throw new Error(`Instruction ${name} requires 2 arguments at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[1])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      } else if (!/^[^,]+,$/.test(args[0])) {
+        throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
+      }
+      const [rs, label] = args.map((arg) => arg.replace(/,/, ''))
+
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!/^-[1-9]|-409[0-6]|-?[1-9][0-9]{1,2}|-?[1-3][0-9]{3}|-?40[0-8][0-9]|[0-9]|409[0-5]$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+      }
+      try {
+        const rs1Binary = registerToBinary(rs)
+        const rs2Binary = registerToBinary('zero')
+        const funct3 = FUNCT3.TYPE_B.blt
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(13, '0')) : parseInt(imm).toString(2).padStart(13, '0')
+        const opcode = OPCODES.blt
+        binOutput += `${immBinary[0]}${immBinary.slice(2, 8)}${rs2Binary}${rs1Binary}${funct3Binary}${immBinary.slice(8, 12)}${immBinary[1]}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'bgtz') {
+      if (args.length !== 2) {
+        throw new Error(`Instruction ${name} requires 2 arguments at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[1])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      } else if (!/^[^,]+,$/.test(args[0])) {
+        throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
+      }
+      const [rs, label] = args.map((arg) => arg.replace(/,/, ''))
+
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!/^-[1-9]|-409[0-6]|-?[1-9][0-9]{1,2}|-?[1-3][0-9]{3}|-?40[0-8][0-9]|[0-9]|409[0-5]$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+      }
+      try {
+        const rs1Binary = registerToBinary('zero')
+        const rs2Binary = registerToBinary(rs)
+        const funct3 = FUNCT3.TYPE_B.blt
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(13, '0')) : parseInt(imm).toString(2).padStart(13, '0')
+        const opcode = OPCODES.blt
+        binOutput += `${immBinary[0]}${immBinary.slice(2, 8)}${rs2Binary}${rs1Binary}${funct3Binary}${immBinary.slice(8, 12)}${immBinary[1]}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'bgt') {
+      if (args.length !== 3) {
+        throw new Error(`Instruction ${name} requires 3 arguments at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[2])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      } else if (!/^[^,]+,$/.test(args[0]) || !/^[^,]+,$/.test(args[1])) {
+        throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
+      }
+      const [rs, rt, label] = args.map((arg) => arg.replace(/,/, ''))
+
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!/^-[1-9]|-409[0-6]|-?[1-9][0-9]{1,2}|-?[1-3][0-9]{3}|-?40[0-8][0-9]|[0-9]|409[0-5]$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+      }
+      try {
+        const rs1Binary = registerToBinary(rt)
+        const rs2Binary = registerToBinary(rs)
+        const funct3 = FUNCT3.TYPE_B.blt
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(13, '0')) : parseInt(imm).toString(2).padStart(13, '0')
+        const opcode = OPCODES.blt
+        binOutput += `${immBinary[0]}${immBinary.slice(2, 8)}${rs2Binary}${rs1Binary}${funct3Binary}${immBinary.slice(8, 12)}${immBinary[1]}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'ble') {
+      if (args.length !== 3) {
+        throw new Error(`Instruction ${name} requires 3 arguments at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[2])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      } else if (!/^[^,]+,$/.test(args[0]) || !/^[^,]+,$/.test(args[1])) {
+        throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
+      }
+      const [rs, rt, label] = args.map((arg) => arg.replace(/,/, ''))
+
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!/^-[1-9]|-409[0-6]|-?[1-9][0-9]{1,2}|-?[1-3][0-9]{3}|-?40[0-8][0-9]|[0-9]|409[0-5]$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+      }
+      try {
+        const rs1Binary = registerToBinary(rt)
+        const rs2Binary = registerToBinary(rs)
+        const funct3 = FUNCT3.TYPE_B.bge
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(13, '0')) : parseInt(imm).toString(2).padStart(13, '0')
+        const opcode = OPCODES.bge
+        binOutput += `${immBinary[0]}${immBinary.slice(2, 8)}${rs2Binary}${rs1Binary}${funct3Binary}${immBinary.slice(8, 12)}${immBinary[1]}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'bgtu') {
+      if (args.length !== 3) {
+        throw new Error(`Instruction ${name} requires 3 arguments at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[2])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      } else if (!/^[^,]+,$/.test(args[0]) || !/^[^,]+,$/.test(args[1])) {
+        throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
+      }
+      const [rs, rt, label] = args.map((arg) => arg.replace(/,/, ''))
+
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!/^-[1-9]|-409[0-6]|-?[1-9][0-9]{1,2}|-?[1-3][0-9]{3}|-?40[0-8][0-9]|[0-9]|409[0-5]$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+      }
+      try {
+        const rs1Binary = registerToBinary(rt)
+        const rs2Binary = registerToBinary(rs)
+        const funct3 = FUNCT3.TYPE_B.bltu
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(13, '0')) : parseInt(imm).toString(2).padStart(13, '0')
+        const opcode = OPCODES.bltu
+        binOutput += `${immBinary[0]}${immBinary.slice(2, 8)}${rs2Binary}${rs1Binary}${funct3Binary}${immBinary.slice(8, 12)}${immBinary[1]}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'bleu') {
+      if (args.length !== 3) {
+        throw new Error(`Instruction ${name} requires 3 arguments at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[2])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      } else if (!/^[^,]+,$/.test(args[0]) || !/^[^,]+,$/.test(args[1])) {
+        throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
+      }
+      const [rs, rt, label] = args.map((arg) => arg.replace(/,/, ''))
+
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!/^-[1-9]|-409[0-6]|-?[1-9][0-9]{1,2}|-?[1-3][0-9]{3}|-?40[0-8][0-9]|[0-9]|409[0-5]$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+      }
+      try {
+        const rs1Binary = registerToBinary(rt)
+        const rs2Binary = registerToBinary(rs)
+        const funct3 = FUNCT3.TYPE_B.bgeu
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(13, '0')) : parseInt(imm).toString(2).padStart(13, '0')
+        const opcode = OPCODES.bgeu
+        binOutput += `${immBinary[0]}${immBinary.slice(2, 8)}${rs2Binary}${rs1Binary}${funct3Binary}${immBinary.slice(8, 12)}${immBinary[1]}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'j') {
+      if (args.length !== 1) {
+        throw new Error(`Instruction ${name} requires 1 argument at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[0])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      }
+      const [label] = args
+      const imm = labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!/^-[1-9]|-104857[0-6]|-?[1-9][0-9]{1,5}|-?10[0-3][0-9]{4}|-?104[0-7][0-9]{3}|-?1048[0-4][0-9]{2}|-?10485[0-6][0-9]|[0-9]|104857[0-5]$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+      }
+      try {
+        const immBinary = parseInt(imm).toString(2).padStart(32, '0')
+        const rdBinary = registerToBinary('zero')
+        const opcode = OPCODES.jal
+        binOutput += `${immBinary[0]}${immBinary.slice(10, 20)}${immBinary[9]}${immBinary.slice(1, 9)}${rdBinary}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'jr') {
+      if (args.length !== 1) {
+        throw new Error(`Instruction ${name} requires 1 argument at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[0])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      }
+      const [rs] = args
+      try {
+        const rdBinary = registerToBinary('zero')
+        const rs1Binary = registerToBinary(rs)
+        const funct3 = FUNCT3.TYPE_I.jalr
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const immBinary = Number(0).toString(2).padStart(12, '0')
+        const opcode = OPCODES.jalr
+        binOutput += `${immBinary}${rs1Binary}${funct3Binary}${rdBinary}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'ret') {
+      if (args.length !== 0) {
+        throw new Error(`Instruction ${name} requires 0 arguments at instruction ${i + 1}`)
+      }
+      try {
+        const rdBinary = registerToBinary('zero')
+        const rs1Binary = registerToBinary('x1')
+        const funct3 = FUNCT3.TYPE_I.jalr
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const immBinary = Number(0).toString(2).padStart(12, '0')
+        const opcode = OPCODES.jalr
+        binOutput += `${immBinary}${rs1Binary}${funct3Binary}${rdBinary}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'call') {
+      if (args.length !== 1) {
+        throw new Error(`Instruction ${name} requires 1 argument at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[0])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      }
+      const [offset] = args
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === offset)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`imm ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!regex32Bits.test(imm)) {
+        throw new Error(`imm ${imm} is out of range at instruction ${i + 1}`)
+      }
+
+      try {
+        const rdBinary = registerToBinary('x1')
+        const rs1Binary = registerToBinary('x1')
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(32, '0')) : parseInt(imm).toString(2).padStart(32, '0')
+        const funct3 = FUNCT3.TYPE_I.jalr
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const imm1Binary = immBinary.slice(12, 32)
+        const imm2Binary = immBinary.slice(0, 12)
+        const opcode1 = OPCODES.auipc
+        const opcode2 = OPCODES.jalr
+
+        console.log({ imm1Binary, rdBinary, opcode1 })
+        console.log({ imm2Binary, rs1Binary, funct3Binary, rdBinary, opcode2 })
+
+        binOutput += `${imm1Binary}${rdBinary}${opcode1}\n`
+        binOutput += `${imm2Binary}${rs1Binary}${funct3Binary}${rdBinary}${opcode2}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else if (name === 'tail') {
+      if (args.length !== 1) {
+        throw new Error(`Instruction ${name} requires 1 argument at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[0])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      }
+      const [offset] = args
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === offset)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`imm ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!regex32Bits.test(imm)) {
+        throw new Error(`imm ${imm} is out of range at instruction ${i + 1}`)
+      }
+
+      try {
+        const rdBinary1 = registerToBinary('x6')
+        const rdBinary2 = registerToBinary('x0')
+        const rs1Binary = registerToBinary('x6')
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(32, '0')) : parseInt(imm).toString(2).padStart(32, '0')
+        const funct3 = FUNCT3.TYPE_I.jalr
+        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+        const imm1Binary = immBinary.slice(12, 32)
+        const imm2Binary = immBinary.slice(0, 12)
+        const opcode1 = OPCODES.auipc
+        const opcode2 = OPCODES.jalr
+
+        binOutput += `${imm1Binary}${rdBinary1}${opcode1}\n`
+        binOutput += `${imm2Binary}${rs1Binary}${funct3Binary}${rdBinary2}${opcode2}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
     }
   }
   // #endregion
@@ -414,35 +802,53 @@ instructions.forEach((instruction, i) => {
         throw new Error(e.message + ` at instruction ${i + 1}`)
       }
     } else if (name === 'jalr') {
-      if (args.length !== 2) {
-        throw new Error(`Instruction ${name} requires 2 arguments at instruction ${i + 1}`)
-      } else if (/^[^,]+,$/.test(args[1])) {
-        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
-      } else if (!/^[^,]+,$/.test(args[0])) {
-        throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
-      }
-      const [rd, offset] = args.map((arg) => arg.replace(/,/, ''))
-      const offsetRegex = /^-?\d+\([^ ]+\)$/
-      if (!offsetRegex.test(offset)) {
-        throw new Error(`Offset ${offset} is not in the correct format at instruction ${i + 1}`)
-      }
-      const imm = offset.match(/-?\d+/)[0]
-      if (!/^-?\d+$/.test(imm)) {
-        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
-      } else if (!/^-[1-9]$|^-204[0-8]$|^-?[1-9][0-9]{1,2}$|^-?1[0-9]{3}$|^-?20[0-3][0-9]$|^[0-9]$|^204[0-7]$/.test(imm)) {
-        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
-      }
-      const rs1 = offset.match(/\([^ ]+\)/)[0].replace(/[()]/g, '')
-      try {
-        const rdBinary = registerToBinary(rd)
-        const rs1Binary = registerToBinary(rs1)
-        const funct3 = FUNCT3[type][name]
-        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
-        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(12, '0')) : parseInt(imm).toString(2).padStart(12, '0')
-        const opcode = OPCODES[name]
-        binOutput += `${immBinary}${rs1Binary}${funct3Binary}${rdBinary}${opcode}\n`
-      } catch (e) {
-        throw new Error(e.message + ` at instruction ${i + 1}`)
+      if (args.length === 1) {
+        if (/^[^,]+,$/.test(args[0])) {
+          throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+        }
+        const [rs] = args
+        try {
+          const rdBinary = registerToBinary('x1')
+          const rs1Binary = registerToBinary(rs)
+          const funct3 = FUNCT3[type][name]
+          const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+          const immBinary = Number(0).toString(2).padStart(12, '0')
+          const opcode = OPCODES[name]
+          binOutput += `${immBinary}${rs1Binary}${funct3Binary}${rdBinary}${opcode}\n`
+        } catch (e) {
+          throw new Error(e.message + ` at instruction ${i + 1}`)
+        }
+      } else {
+        if (args.length !== 2) {
+          throw new Error(`Instruction ${name} requires 2 arguments at instruction ${i + 1}`)
+        } else if (/^[^,]+,$/.test(args[1])) {
+          throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+        } else if (!/^[^,]+,$/.test(args[0])) {
+          throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
+        }
+        const [rd, offset] = args.map((arg) => arg.replace(/,/, ''))
+        const offsetRegex = /^-?\d+\([^ ]+\)$/
+        if (!offsetRegex.test(offset)) {
+          throw new Error(`Offset ${offset} is not in the correct format at instruction ${i + 1}`)
+        }
+        const imm = offset.match(/-?\d+/)[0]
+        if (!/^-?\d+$/.test(imm)) {
+          throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+        } else if (!/^-[1-9]$|^-204[0-8]$|^-?[1-9][0-9]{1,2}$|^-?1[0-9]{3}$|^-?20[0-3][0-9]$|^[0-9]$|^204[0-7]$/.test(imm)) {
+          throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+        }
+        const rs1 = offset.match(/\([^ ]+\)/)[0].replace(/[()]/g, '')
+        try {
+          const rdBinary = registerToBinary(rd)
+          const rs1Binary = registerToBinary(rs1)
+          const funct3 = FUNCT3[type][name]
+          const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+          const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(12, '0')) : parseInt(imm).toString(2).padStart(12, '0')
+          const opcode = OPCODES[name]
+          binOutput += `${immBinary}${rs1Binary}${funct3Binary}${rdBinary}${opcode}\n`
+        } catch (e) {
+          throw new Error(e.message + ` at instruction ${i + 1}`)
+        }
       }
     } else {
       if (args.length !== 3) {
@@ -615,30 +1021,51 @@ instructions.forEach((instruction, i) => {
       throw new Error(e.message + ` at instruction ${i + 1}`)
     }
   } else if (type === 'TYPE_J') {
-    if (args.length !== 2) {
-      throw new Error(`Instruction ${name} requires 2 arguments at instruction ${i + 1}`)
-    } else if (/^[^,]+,$/.test(args[1])) {
-      throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
-    } else if (!/^[^,]+,$/.test(args[0])) {
-      throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
-    }
-    const [rd, label] = args.map((arg) => arg.replace(/,/, ''))
+    if (args.length === 1) {
+      if (/^[^,]+,$/.test(args[0])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      }
+      const [label] = args
 
-    const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] - i) * 4
-    if (!/^-?\d+$/.test(imm)) {
-      throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
-    } else if (!/^-[1-9]|-104857[0-6]|-?[1-9][0-9]{1,5}|-?10[0-3][0-9]{4}|-?104[0-7][0-9]{3}|-?1048[0-4][0-9]{2}|-?10485[0-6][0-9]|[0-9]|104857[0-5]$/.test(imm)) {
-      throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
-    }
-    console.log(imm)
-    try {
-      const rdBinary = registerToBinary(rd)
-      const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(21, '0')) : parseInt(imm).toString(2).padStart(21, '0')
-      const opcode = OPCODES[name]
-      console.log({ immBinary1: immBinary[0], immBinary2: immBinary.slice(10, 20), immBinary3: immBinary[9], immBinary4: immBinary.slice(1, 9), rdBinary, opcode })
-      binOutput += `${immBinary[0]}${immBinary.slice(10, 20)}${immBinary[9]}${immBinary.slice(1, 9)}${rdBinary}${opcode}\n`
-    } catch (e) {
-      throw new Error(e.message + ` at instruction ${i + 1}`)
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!/^-[1-9]|-104857[0-6]|-?[1-9][0-9]{1,5}|-?10[0-3][0-9]{4}|-?104[0-7][0-9]{3}|-?1048[0-4][0-9]{2}|-?10485[0-6][0-9]|[0-9]|104857[0-5]$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+      }
+      try {
+        const rdBinary = registerToBinary('x1')
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(21, '0')) : parseInt(imm).toString(2).padStart(21, '0')
+        const opcode = OPCODES[name]
+        console.log({ immBinary1: immBinary[0], immBinary2: immBinary.slice(10, 20), immBinary3: immBinary[9], immBinary4: immBinary.slice(1, 9), rdBinary, opcode })
+        binOutput += `${immBinary[0]}${immBinary.slice(10, 20)}${immBinary[9]}${immBinary.slice(1, 9)}${rdBinary}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
+    } else {
+      if (args.length !== 2) {
+        throw new Error(`Instruction ${name} requires 1 or 2 arguments at instruction ${i + 1}`)
+      } else if (/^[^,]+,$/.test(args[1])) {
+        throw new Error(`Instruction ${name} has a trailing comma at instruction ${i + 1}`)
+      } else if (!/^[^,]+,$/.test(args[0])) {
+        throw new Error(`Instruction ${name} has a missing comma at instruction ${i + 1}`)
+      }
+      const [rd, label] = args.map((arg) => arg.replace(/,/, ''))
+
+      const imm = (labelsAndIndex.find((labelAndIndex) => labelAndIndex[0] === label)[1] - i) * 4
+      if (!/^-?\d+$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is not a number at instruction ${i + 1}`)
+      } else if (!/^-[1-9]|-104857[0-6]|-?[1-9][0-9]{1,5}|-?10[0-3][0-9]{4}|-?104[0-7][0-9]{3}|-?1048[0-4][0-9]{2}|-?10485[0-6][0-9]|[0-9]|104857[0-5]$/.test(imm)) {
+        throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
+      }
+      try {
+        const rdBinary = registerToBinary(rd)
+        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(21, '0')) : parseInt(imm).toString(2).padStart(21, '0')
+        const opcode = OPCODES[name]
+        binOutput += `${immBinary[0]}${immBinary.slice(10, 20)}${immBinary[9]}${immBinary.slice(1, 9)}${rdBinary}${opcode}\n`
+      } catch (e) {
+        throw new Error(e.message + ` at instruction ${i + 1}`)
+      }
     }
   }
 })

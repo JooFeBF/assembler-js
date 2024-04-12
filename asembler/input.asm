@@ -1,14 +1,31 @@
-main:                       ; primera etiqueta
-    jal x4, label1
-    addi x4, zero, 520      ; primera instrucción
-    addi x5, zero, 1550     ; segunda instrucción
-    beq x4, x5, label1      ; tercera instrucción
-    addi x6, zero, 80       ; cuarta instrucción
-    beq zero, zero, label2  ; quinta instrucción
-    
-
-label1:                     ; segunda etiqueta
-    addi x6, zero, 100      ; sexta instrucción
-
-label2:                     ; tercera etiqueta
-    add zero, zero, zero    ; séptima instrucción
+square(int):                             # @square(int)
+        addi    sp, sp, -16
+        sw      ra, 12(sp)                      # 4-byte Folded Spill
+        sw      s0, 8(sp)                       # 4-byte Folded Spill
+        addi    s0, sp, 16
+        sw      a0, -12(s0)
+        addi    a0, zero, 23
+        sw      a0, -16(s0)
+        lw      a0, -12(s0)
+        mul     a0, a0, a0
+        lw      a1, -16(s0)
+        add     a0, a0, a1
+        lw      s0, 8(sp)                       # 4-byte Folded Reload
+        lw      ra, 12(sp)                      # 4-byte Folded Reload
+        addi    sp, sp, 16
+        ret
+main:                                   # @main
+        addi    sp, sp, -16
+        sw      ra, 12(sp)                      # 4-byte Folded Spill
+        sw      s0, 8(sp)                       # 4-byte Folded Spill
+        addi    s0, sp, 16
+        addi    a0, zero, 3
+        sw      a0, -12(s0)
+        lw      a0, -12(s0)
+        call    square(int)
+        sw      a0, -16(s0)
+        mv      a0, zero
+        lw      s0, 8(sp)                       # 4-byte Folded Reload
+        lw      ra, 12(sp)                      # 4-byte Folded Reload
+        addi    sp, sp, 16
+        ret
