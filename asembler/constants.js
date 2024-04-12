@@ -8,6 +8,7 @@ const INSTRUCTIONS = {
   TYPE_U: ['lui', 'auipc'],
   TYPE_J: ['jal']
 }
+const PSEUDO_INSTRUCTIONS = ['la', 'li', 'nop', 'mv', 'not', 'neg', 'seqz', 'snez', 'sltz', 'sgtz', 'beqz', 'bnez', 'blez', 'bgez', 'bltz', 'bgtz', 'bgt', 'ble', 'bgtu', 'bleu', 'j', 'jr', 'ret', 'call', 'tail']
 
 const OPCODES = {
   add: '0110011',
@@ -175,4 +176,4 @@ const FUNCT7 = {
   }
 }
 
-export default { INSTRUCTIONS_TYPE, INSTRUCTIONS, OPCODES, ABI_REGISTERS, FUNCT3, FUNCT7 }
+export default { INSTRUCTIONS_TYPE, INSTRUCTIONS, OPCODES, ABI_REGISTERS, FUNCT3, FUNCT7, PSEUDO_INSTRUCTIONS }
