@@ -20,7 +20,6 @@ const instructions = linesWithoutComments.filter((line) => {
 })
 const labelsWithInstructionIndex = linesWithoutComments.map((line, i) => {
   if ((/^.+:$/).test(line)) {
-    console.log(line)
     if (!/^[\w._][\w_\d()]*:$/.test(line)) {
       throw new Error(`Invalid label ${line} at line ${i + 1}`)
     }
@@ -38,8 +37,6 @@ const labelsAndIndex = labelsWithInstructionIndex.filter((label) => {
   }
   return label !== null
 })
-
-console.log(labelsAndIndex)
 
 let binOutput = ''
 
@@ -663,9 +660,6 @@ instructions.forEach((instruction, i) => {
         const opcode1 = OPCODES.auipc
         const opcode2 = OPCODES.jalr
 
-        console.log({ imm1Binary, rdBinary, opcode1 })
-        console.log({ imm2Binary, rs1Binary, funct3Binary, rdBinary, opcode2 })
-
         binOutput += `${imm1Binary}${rdBinary}${opcode1}\n`
         binOutput += `${imm2Binary}${rs1Binary}${funct3Binary}${rdBinary}${opcode2}\n`
       } catch (e) {
@@ -986,7 +980,6 @@ instructions.forEach((instruction, i) => {
     } else if (!/^-[1-9]|-409[0-6]|-?[1-9][0-9]{1,2}|-?[1-3][0-9]{3}|-?40[0-8][0-9]|[0-9]|409[0-5]$/.test(imm)) {
       throw new Error(`Immediate value ${imm} is out of range at instruction ${i + 1}`)
     }
-    console.log(imm)
     try {
       const rs1Binary = registerToBinary(rs1)
       const rs2Binary = registerToBinary(rs2)
@@ -1037,7 +1030,6 @@ instructions.forEach((instruction, i) => {
         const rdBinary = registerToBinary('x1')
         const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(21, '0')) : parseInt(imm).toString(2).padStart(21, '0')
         const opcode = OPCODES[name]
-        console.log({ immBinary1: immBinary[0], immBinary2: immBinary.slice(10, 20), immBinary3: immBinary[9], immBinary4: immBinary.slice(1, 9), rdBinary, opcode })
         binOutput += `${immBinary[0]}${immBinary.slice(10, 20)}${immBinary[9]}${immBinary.slice(1, 9)}${rdBinary}${opcode}\n`
       } catch (e) {
         throw new Error(e.message + ` at instruction ${i + 1}`)
@@ -1070,4 +1062,14 @@ instructions.forEach((instruction, i) => {
   }
 })
 
-fs.writeFileSync(output, binOutput)
+const hexOutput = binOutput.split(/\n/).map((line) => parseInt(line, 2).toString(16).padStart(8, '0'))
+hexOutput.pop()
+const hexOutputString = hexOutput.join('\n')
+
+if (/.\.hex/.test(output)) {
+  fs.writeFileSync(output, hexOutputString)
+} else if (/.\.bin/.test(output)) {
+  fs.writeFileSync(output, binOutput)
+} else {
+  throw new Error('Output file must be a .hex or .bin file')
+}
