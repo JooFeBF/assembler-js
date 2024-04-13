@@ -1,4 +1,5 @@
-_Z6squarei:                             # @_Z6squarei
+_Z6squarei:
+        li x2, 12333                        # @_Z6squarei
         addi    sp, sp, -16
         sw      ra, 12(sp)                      # 4-byte Folded Spill
         sw      s0, 8(sp)                       # 4-byte Folded Spill

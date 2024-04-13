@@ -133,13 +133,15 @@ instructions.forEach((instruction, i) => {
       if (!/^-[1-9]$|^-204[0-8]$|^-?[1-9][0-9]{1,2}$|^-?1[0-9]{3}$|^-?20[0-3][0-9]$|^[0-9]$|^204[0-7]$/.test(imm)) {
         try {
           const rdBinary = registerToBinary(rd)
-          const imm1Binary = imm.slice(0, 12).padStart(20, '0')
-          const imm2Binary = imm.slice(12, 32)
-          const opcode = OPCODES.addi
+          const immBinary = parseInt(imm).toString(2).padStart(32, '0')
+          const imm1Binary = immBinary.slice(0, 20)
+          const imm2Binary = immBinary.slice(20, 32)
+          const opcode1 = OPCODES.lui
+          const opcode2 = OPCODES.addi
           const funct3 = FUNCT3.TYPE_I.addi
           const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
-          binOutput += `${imm1Binary}${rdBinary}${opcode}\n`
-          binOutput += `${imm2Binary}${rdBinary}${funct3Binary}${rdBinary}${opcode}\n`
+          binOutput += `${imm1Binary}${rdBinary}${opcode1}\n`
+          binOutput += `${imm2Binary}${rdBinary}${funct3Binary}${rdBinary}${opcode2}\n`
         } catch (e) {
           throw new Error(e.message + ` at instruction ${i + 1}`)
         }
@@ -656,8 +658,8 @@ instructions.forEach((instruction, i) => {
           const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(32, '0')) : parseInt(imm).toString(2).padStart(32, '0')
           const funct3 = FUNCT3.TYPE_I.jalr
           const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
-          const imm1Binary = immBinary.slice(0, 20)
-          const imm2Binary = immBinary.slice(20, 32)
+          const imm1Binary = immBinary.slice(12, 32)
+          const imm2Binary = immBinary.slice(0, 12)
           const opcode1 = OPCODES.auipc
           const opcode2 = OPCODES.jalr
 
@@ -706,8 +708,8 @@ instructions.forEach((instruction, i) => {
           const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(32, '0')) : parseInt(imm).toString(2).padStart(32, '0')
           const funct3 = FUNCT3.TYPE_I.jalr
           const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
-          const imm1Binary = immBinary.slice(0, 20)
-          const imm2Binary = immBinary.slice(20, 32)
+          const imm1Binary = immBinary.slice(12, 32)
+          const imm2Binary = immBinary.slice(0, 12)
           const opcode1 = OPCODES.auipc
           const opcode2 = OPCODES.jalr
 
