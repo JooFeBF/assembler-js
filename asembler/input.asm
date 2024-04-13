@@ -1,4 +1,4 @@
-square(int):                             # @square(int)
+squareint:                             # @square(int)
         addi    sp, sp, -16
         sw      ra, 12(sp)                      # 4-byte Folded Spill
         sw      s0, 8(sp)                       # 4-byte Folded Spill
@@ -22,7 +22,7 @@ main:                                   # @main
         addi    a0, zero, 3
         sw      a0, -12(s0)
         lw      a0, -12(s0)
-        call    square(int)
+        call    squareint
         sw      a0, -16(s0)
         mv      a0, zero
         lw      s0, 8(sp)                       # 4-byte Folded Reload

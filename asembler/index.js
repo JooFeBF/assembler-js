@@ -649,21 +649,40 @@ instructions.forEach((instruction, i) => {
         throw new Error(`imm ${imm} is out of range at instruction ${i + 1}`)
       }
 
-      try {
-        const rdBinary = registerToBinary('x1')
-        const rs1Binary = registerToBinary('x1')
-        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(32, '0')) : parseInt(imm).toString(2).padStart(32, '0')
-        const funct3 = FUNCT3.TYPE_I.jalr
-        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
-        const imm1Binary = immBinary.slice(12, 32)
-        const imm2Binary = immBinary.slice(0, 12)
-        const opcode1 = OPCODES.auipc
-        const opcode2 = OPCODES.jalr
+      if (!/^-[1-9]$|^-204[0-8]$|^-?[1-9][0-9]{1,2}$|^-?1[0-9]{3}$|^-?20[0-3][0-9]$|^[0-9]$|^204[0-7]$/.test(imm)) {
+        try {
+          const rdBinary = registerToBinary('x1')
+          const rs1Binary = registerToBinary('x1')
+          const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(32, '0')) : parseInt(imm).toString(2).padStart(32, '0')
+          const funct3 = FUNCT3.TYPE_I.jalr
+          const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+          const imm1Binary = immBinary.slice(12, 32)
+          const imm2Binary = immBinary.slice(0, 12)
+          const opcode1 = OPCODES.auipc
+          const opcode2 = OPCODES.jalr
 
-        binOutput += `${imm1Binary}${rdBinary}${opcode1}\n`
-        binOutput += `${imm2Binary}${rs1Binary}${funct3Binary}${rdBinary}${opcode2}\n`
-      } catch (e) {
-        throw new Error(e.message + ` at instruction ${i + 1}`)
+          binOutput += `${imm1Binary}${rdBinary}${opcode1}\n`
+          binOutput += `${imm2Binary}${rs1Binary}${funct3Binary}${rdBinary}${opcode2}\n`
+        } catch (e) {
+          throw new Error(e.message + ` at instruction ${i + 1}`)
+        }
+      } else {
+        try {
+          const rdBinary = registerToBinary('x1')
+          const rs1Binary = registerToBinary('x1')
+          const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(32, '0')) : parseInt(imm).toString(2).padStart(32, '0')
+          const funct3 = FUNCT3.TYPE_I.jalr
+          const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+          const imm1Binary = Number(0).toString(2).padStart(20, '0')
+          const imm2Binary = immBinary.slice(20, 32)
+          const opcode1 = OPCODES.auipc
+          const opcode2 = OPCODES.jalr
+
+          binOutput += `${imm1Binary}${rdBinary}${opcode1}\n`
+          binOutput += `${imm2Binary}${rs1Binary}${funct3Binary}${rdBinary}${opcode2}\n`
+        } catch (e) {
+          throw new Error(e.message + ` at instruction ${i + 1}`)
+        }
       }
     } else if (name === 'tail') {
       if (args.length !== 1) {
@@ -679,22 +698,42 @@ instructions.forEach((instruction, i) => {
         throw new Error(`imm ${imm} is out of range at instruction ${i + 1}`)
       }
 
-      try {
-        const rdBinary1 = registerToBinary('x6')
-        const rdBinary2 = registerToBinary('x0')
-        const rs1Binary = registerToBinary('x6')
-        const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(32, '0')) : parseInt(imm).toString(2).padStart(32, '0')
-        const funct3 = FUNCT3.TYPE_I.jalr
-        const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
-        const imm1Binary = immBinary.slice(12, 32)
-        const imm2Binary = immBinary.slice(0, 12)
-        const opcode1 = OPCODES.auipc
-        const opcode2 = OPCODES.jalr
+      if (!/^-[1-9]$|^-204[0-8]$|^-?[1-9][0-9]{1,2}$|^-?1[0-9]{3}$|^-?20[0-3][0-9]$|^[0-9]$|^204[0-7]$/.test(imm)) {
+        try {
+          const rdBinary1 = registerToBinary('x6')
+          const rdBinary2 = registerToBinary('x0')
+          const rs1Binary = registerToBinary('x6')
+          const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(32, '0')) : parseInt(imm).toString(2).padStart(32, '0')
+          const funct3 = FUNCT3.TYPE_I.jalr
+          const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+          const imm1Binary = immBinary.slice(12, 32)
+          const imm2Binary = immBinary.slice(0, 12)
+          const opcode1 = OPCODES.auipc
+          const opcode2 = OPCODES.jalr
 
-        binOutput += `${imm1Binary}${rdBinary1}${opcode1}\n`
-        binOutput += `${imm2Binary}${rs1Binary}${funct3Binary}${rdBinary2}${opcode2}\n`
-      } catch (e) {
-        throw new Error(e.message + ` at instruction ${i + 1}`)
+          binOutput += `${imm1Binary}${rdBinary1}${opcode1}\n`
+          binOutput += `${imm2Binary}${rs1Binary}${funct3Binary}${rdBinary2}${opcode2}\n`
+        } catch (e) {
+          throw new Error(e.message + ` at instruction ${i + 1}`)
+        }
+      } else {
+        try {
+          const rdBinary1 = registerToBinary('x6')
+          const rdBinary2 = registerToBinary('x0')
+          const rs1Binary = registerToBinary('x6')
+          const immBinary = parseInt(imm) < 0 ? complement2(parseInt(Math.abs(imm)).toString(2).padStart(32, '0')) : parseInt(imm).toString(2).padStart(32, '0')
+          const funct3 = FUNCT3.TYPE_I.jalr
+          const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
+          const imm1Binary = Number(0).toString(2).padStart(20, '0')
+          const imm2Binary = immBinary.slice(20, 32)
+          const opcode1 = OPCODES.auipc
+          const opcode2 = OPCODES.jalr
+
+          binOutput += `${imm1Binary}${rdBinary1}${opcode1}\n`
+          binOutput += `${imm2Binary}${rs1Binary}${funct3Binary}${rdBinary2}${opcode2}\n`
+        } catch (e) {
+          throw new Error(e.message + ` at instruction ${i + 1}`)
+        }
       }
     }
   }
