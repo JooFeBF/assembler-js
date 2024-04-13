@@ -96,8 +96,9 @@ instructions.forEach((instruction, i) => {
         const symbolBinary = parseInt(symbol) < 0 ? complement2(parseInt(Math.abs(symbol)).toString(2).padStart(32, '0')) : parseInt(symbol).toString(2).padStart(32, '0')
         const funct3 = FUNCT3.TYPE_I.addi
         const funct3Binary = Number(funct3.match(/[0-7](?!x)/)).toString(2).padStart(3, '0')
-        const imm1Binary = symbolBinary.slice(0, 12)
-        const imm2Binary = symbolBinary.slice(12, 32)
+        const immBinary = symbolBinary.slice(0, 12)
+        const imm1Binary = immBinary.slice(0, 20)
+        const imm2Binary = immBinary.slice(20, 32)
         const opcode1 = OPCODES.auipc
         const opcode2 = OPCODES.addi
 
