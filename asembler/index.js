@@ -20,7 +20,7 @@ const instructions = linesWithoutComments.filter((line) => {
 })
 const labelsWithInstructionIndex = linesWithoutComments.map((line, i) => {
   if ((/^.+:$/).test(line)) {
-    if (!/^[\w._][\w_\d()]*:$/.test(line)) {
+    if (!/^[\w._][\w_\d]*:$/.test(line)) {
       throw new Error(`Invalid label ${line} at line ${i + 1}`)
     }
     const labelIndex = instructions.includes(linesWithoutComments[i + 1]) ? instructions.indexOf(linesWithoutComments[i + 1]) : null
