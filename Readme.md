@@ -47,11 +47,11 @@ conjunto de instrucciones de RISC-V, en específico parar RISCVI32.
 
 Un ensamblador es un traductor muy simple que toma un archivo escrito en
 lenguaje de bajo nivel y produce un archivo binario que el procesador puede
-ejecutar. Así pues, su programa escrito en Python será invocado de la siguiente
+ejecutar. Así pues, su programa escrito en Javascript será invocado de la siguiente
 manera:
 
 ```shell
-python assembler.py -i input.asm -o output.hex
+node assembler.js -i input.asm -o output.hex
 ```
 
 donde `assembler.py` es su programa (o por lo menos el módulo principal),
