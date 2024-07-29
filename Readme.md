@@ -51,7 +51,7 @@ ejecutar. Así pues, su programa escrito en Javascript será invocado de la sigu
 manera:
 
 ```shell
-node assembler.js -i input.asm -o output.hex
+node index.js -i input.asm -o output.hex
 ```
 
 donde `assembler.py` es su programa (o por lo menos el módulo principal),
