@@ -37,21 +37,10 @@ def to_signed_binary(value, width):
 
 
 def parse_funct3(hex_str):
-    for i in range(len(hex_str)):
-        ch = hex_str[i]
-        if '0' <= ch <= '7':
-            next_ch = hex_str[i + 1] if i + 1 < len(hex_str) else ''
-            if next_ch != 'x':
-                return bin(int(ch))[2:].zfill(3)
-    return '000'
-
+    return bin(int(hex_str, 16))[2:].zfill(3)
 
 def parse_funct7(hex_str):
-    if '20' in hex_str:
-        return bin(20)[2:].zfill(7)
-    elif '01' in hex_str:
-        return bin(1)[2:].zfill(7)
-    return '0000000'
+    return bin(int(hex_str, 16))[2:].zfill(7)
 
 
 def is_number(s):
@@ -88,7 +77,7 @@ def in_range_21bit(value):
 
 def in_range_20bit(value):
     n = int(value)
-    return -524288 <= n <= 524287
+    return -524288 <= n <= 1048575
 
 
 def in_range_32bit(value):

@@ -160,7 +160,7 @@ def encode_pseudo(name, args, i, labels_and_index):
         if not in_range_12bit(imm):
             try:
                 rd_bin = register_to_binary(rd)
-                imm_bin = bin(int(imm))[2:].zfill(32)
+                imm_bin = to_signed_binary(imm, 32)
                 imm1 = imm_bin[0:20]
                 imm2 = imm_bin[20:32]
                 opcode1 = OPCODES['lui']
@@ -173,7 +173,7 @@ def encode_pseudo(name, args, i, labels_and_index):
             try:
                 rd_bin = register_to_binary(rd)
                 rs1_bin = register_to_binary('zero')
-                imm_bin = bin(int(imm))[2:].zfill(12)
+                imm_bin = to_signed_binary(imm, 12)
                 opcode = OPCODES['addi']
                 f3_bin = parse_funct3(FUNCT3['TYPE_I']['addi'])
                 return imm_bin + rs1_bin + f3_bin + rd_bin + opcode + "\n"
@@ -218,7 +218,7 @@ def encode_pseudo(name, args, i, labels_and_index):
             rs_bin = register_to_binary(rs)
             f3_bin = parse_funct3(FUNCT3['TYPE_R']['sub'])
             f7_bin = parse_funct7(FUNCT7['TYPE_R']['sub'])
-            opcode = OPCODES[name]
+            opcode = OPCODES['sub']
             return f7_bin + rs_bin + rs1_bin + f3_bin + rd_bin + opcode + "\n"
         except Exception as e:
             raise Exception(str(e) + " at instruction " + str(i + 1))
@@ -287,7 +287,7 @@ def encode_pseudo(name, args, i, labels_and_index):
     elif name == 'bnez':
         return encode_pseudo_branch_2arg(name, args, i, labels_and_index, 'bne', False)
     elif name == 'blez':
-        return encode_pseudo_branch_2arg(name, args, i, labels_and_index, 'blz', True)
+        return encode_pseudo_branch_2arg(name, args, i, labels_and_index, 'bge', True)
     elif name == 'bgez':
         return encode_pseudo_branch_2arg(name, args, i, labels_and_index, 'bge', False)
     elif name == 'bltz':
@@ -310,13 +310,13 @@ def encode_pseudo(name, args, i, labels_and_index):
         if has_trailing_comma(args[0]):
             raise Exception("Instruction " + name + " has a trailing comma at instruction " + str(i + 1))
         label = args[0]
-        imm = find_label_index(labels_and_index, label) * 4
+        imm = (find_label_index(labels_and_index, label) - i) * 4
         if not is_number(str(imm)):
             raise Exception("Immediate value " + str(imm) + " is not a number at instruction " + str(i + 1))
         if not in_range_21bit(imm):
             raise Exception("Immediate value " + str(imm) + " is out of range at instruction " + str(i + 1))
         try:
-            imm_bin = bin(int(imm))[2:].zfill(32)
+            imm_bin = to_signed_binary(imm, 21)
             rd_bin = register_to_binary('zero')
             opcode = OPCODES['jal']
             return imm_bin[0] + imm_bin[10:20] + imm_bin[9] + imm_bin[1:9] + rd_bin + opcode + "\n"
@@ -369,8 +369,14 @@ def encode_pseudo(name, args, i, labels_and_index):
                 rs1_bin = register_to_binary('x1')
                 imm_bin = to_signed_binary(imm, 32)
                 f3_bin = parse_funct3(FUNCT3['TYPE_I']['jalr'])
-                imm1 = imm_bin[12:32]
-                imm2 = imm_bin[0:12]
+                
+                auipc_imm = (imm + 0x800) >> 12
+                jalr_imm = imm & 0xFFF
+                if jalr_imm > 0x7FF:
+                    jalr_imm -= 0x1000
+                    
+                imm1 = to_signed_binary(auipc_imm, 20)
+                imm2 = to_signed_binary(jalr_imm, 12)
                 opcode1 = OPCODES['auipc']
                 opcode2 = OPCODES['jalr']
                 return imm1 + rd_bin + opcode1 + "\n" + imm2 + rs1_bin + f3_bin + rd_bin + opcode2 + "\n"
@@ -408,8 +414,14 @@ def encode_pseudo(name, args, i, labels_and_index):
                 rs1_bin = register_to_binary('x6')
                 imm_bin = to_signed_binary(imm, 32)
                 f3_bin = parse_funct3(FUNCT3['TYPE_I']['jalr'])
-                imm1 = imm_bin[12:32]
-                imm2 = imm_bin[0:12]
+                
+                auipc_imm = (imm + 0x800) >> 12
+                jalr_imm = imm & 0xFFF
+                if jalr_imm > 0x7FF:
+                    jalr_imm -= 0x1000
+                    
+                imm1 = to_signed_binary(auipc_imm, 20)
+                imm2 = to_signed_binary(jalr_imm, 12)
                 opcode1 = OPCODES['auipc']
                 opcode2 = OPCODES['jalr']
                 return imm1 + rd_bin1 + opcode1 + "\n" + imm2 + rs1_bin + f3_bin + rd_bin2 + opcode2 + "\n"
@@ -559,7 +571,7 @@ def encode_type_i(name, typ, args, i, labels_and_index):
                 opcode1 = OPCODES['auipc']
                 opcode2 = OPCODES[name]
                 if name == 'srai':
-                    return '0100000' + imm_bin + rs1_bin + f3_bin + rd_bin + opcode1 + "\n"
+                    return '0100000' + imm_bin + rs1_bin + f3_bin + rd_bin + opcode2 + "\n"
                 else:
                     return '0000000' + imm_bin + rs1_bin + f3_bin + rd_bin + opcode2 + "\n"
             except Exception as e:
@@ -658,7 +670,7 @@ def encode_type_u(name, typ, args, i):
         raise Exception("Immediate value " + imm + " is out of range at instruction " + str(i + 1))
     try:
         rd_bin = register_to_binary(rd)
-        imm_bin = bin(int(imm))[2:].zfill(20)
+        imm_bin = to_signed_binary(imm, 20)
         opcode = OPCODES[name]
         return imm_bin + rd_bin + opcode + "\n"
     except Exception as e:

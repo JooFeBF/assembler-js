@@ -1,1 +1,23 @@
-/asembler/node_modules
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Node.js
+assembler/node_modules/
+node_modules/
+npm-debug.log
+
+# Build artifacts & binaries
+*.bin
+*.o
+*.hex
+*.out
+
+# Transient test files
+test_out.bin
+ref.o
+
+# OS & Editor
+.vscode/
+.DS_Store
